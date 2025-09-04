@@ -70,8 +70,6 @@
 
       try {
         const extractedText = await extractTextFromPDF(file);
-        // console.log(extractedText); // Debug if needed
-
         const { department, subjectCode, regNo, studentName, subjectName } = extractStudentInfo(extractedText);
         const { counts, total, unanswered, details } = countKLevels(extractedText);
 
@@ -123,30 +121,35 @@
         text += pageText + "\n";
       }
 
-      // Normalize spacing to ensure better regex matching
+      // Normalize spacing and ensure newlines for questions
       text = text.replace(/\s+Q\.No\./gi, "\nQ.No.");
       text = text.replace(/(\d+)\s+\(/g, "\n$1 (");
       return text;
     }
 
     function extractStudentInfo(text) {
-      // Normalize layout for better matching
-      text = text.replace(/Subject\s*Name\s*:\s*/i, "Subject Name: ");
-      text = text.replace(/Subject\s*Code\s*:\s*/i, "\nSubject Code: ");
-      text = text.replace(/Register\s*No\s*:\s*/i, "\nRegister No: ");
-      text = text.replace(/Department\s*:\s*/i, "\nDepartment: ");
+      // Normalize text first
+      text = text.replace(/\s+/g, " "); // Collapse multiple spaces
+      text = text.replace(/A nalytics/gi, "Analytics"); // Fix broken word
+
+      // Add line breaks for clean extraction
+      text = text.replace(/Student\s*Name\s*:/i, "\nStudent Name: ");
+      text = text.replace(/Register\s*No\s*:/i, "\nRegister No: ");
+      text = text.replace(/Department\s*:/i, "\nDepartment: ");
+      text = text.replace(/Subject\s*Name\s*:/i, "\nSubject Name: ");
+      text = text.replace(/Subject\s*Code\s*:/i, "\nSubject Code: ");
 
       const nameMatch = text.match(/Student\s*Name[:.\- ]+([A-Za-z .]+)/i);
       const regMatch = text.match(/Register\s*No[:.\- ]+([A-Za-z0-9]+)/i);
-      const deptMatch = text.match(/Department[:.\- ]+([A-Za-z0-9. ]+)/i);
+      const deptMatch = text.match(/Department[:.\- ]+([A-Za-z0-9.\- ]+)/i);
       const subjNameMatch = text.match(/Subject\s*Name[:.\- ]+([A-Za-z0-9 .]+)/i);
       const subjCodeMatch = text.match(/Subject\s*Code[:.\- ]+([A-Za-z0-9]+)/i);
 
       return {
         studentName: nameMatch ? nameMatch[1].trim() : null,
         regNo: regMatch ? regMatch[1].trim() : null,
-        department: deptMatch ? deptMatch[1].replace(/\s+/g," ").trim() : null,
-        subjectName: subjNameMatch ? subjNameMatch[1].replace(/\s+/g," ").trim() : null,
+        department: deptMatch ? deptMatch[1].trim() : null,
+        subjectName: subjNameMatch ? subjNameMatch[1].trim() : null,
         subjectCode: subjCodeMatch ? subjCodeMatch[1].trim() : null
       };
     }
