@@ -70,6 +70,8 @@
 
       try {
         const extractedText = await extractTextFromPDF(file);
+        // console.log(extractedText); // Uncomment for debugging
+
         const { department, subjectCode, regNo, studentName, subjectName } = extractStudentInfo(extractedText);
         const { counts, total, unanswered, details } = countKLevels(extractedText);
 
@@ -94,11 +96,7 @@
 
         html += "<h3>Question-wise Answers</h3><ul>";
         details.forEach((d, idx) => {
-          if (d.pickedK) {
-            html += `<li>Q${idx+1}: <span class="answered">${d.pickedK}</span></li>`;
-          } else {
-            html += `<li>Q${idx+1}: <span class="unanswered">Unanswered ❌</span></li>`;
-          }
+          html += `<li>Q${idx+1}: ${d.pickedK ? `<span class="answered">${d.pickedK}</span>` : `<span class="unanswered">Unanswered ❌</span>`}</li>`;
         });
         html += "</ul>";
 
@@ -121,9 +119,15 @@
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
+
+        // Join text items with spaces but ensure newlines between questions
         const pageText = content.items.map(item => item.str).join(" ");
         text += pageText + "\n";
       }
+
+      // Normalize: ensure newline before every question number
+      text = text.replace(/\s+Q\.No\./gi, "\nQ.No.");
+      text = text.replace(/(\d+)\s+\(/g, "\n$1 (");
       return text;
     }
 
@@ -145,29 +149,18 @@
 
     function countKLevels(rawText) {
       const counts = { K1:0, K2:0, K3:0, K4:0, K5:0, K6:0 };
-      const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-
-      const isNumber = s => /^\d+[.)]?$/.test(s);
-      const isMark = s => /\(●\)|●|•|■|✓|x/i.test(s);
-
+      const qRegex = /^(\d+)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)/gm;
       const details = [];
-      for (let i = 0; i < lines.length; i++) {
-        if (isNumber(lines[i])) {
-          const marks = [];
-          let j = i + 1;
-          while (j < lines.length && marks.length < 6) {
-            if (lines[j] !== "") marks.push(lines[j]);
-            j++;
-          }
-          if (marks.length === 6) {
-            const pickedIndex = marks.findIndex(isMark);
-            if (pickedIndex >= 0) {
-              counts["K" + (pickedIndex+1)]++;
-            }
-            details.push({ q: lines[i], pickedK: pickedIndex>=0 ? "K"+(pickedIndex+1) : null });
-            i = j - 1;
-          }
+
+      let match;
+      while ((match = qRegex.exec(rawText)) !== null) {
+        const qNo = match[1];
+        const choices = match.slice(2, 8);
+        const pickedIndex = choices.findIndex(c => c.includes("●"));
+        if (pickedIndex >= 0) {
+          counts[`K${pickedIndex+1}`]++;
         }
+        details.push({ q: qNo, pickedK: pickedIndex >= 0 ? `K${pickedIndex+1}` : null });
       }
 
       const total = Object.values(counts).reduce((a,b)=>a+b,0);
