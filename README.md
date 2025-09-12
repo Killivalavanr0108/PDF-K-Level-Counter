@@ -1,4 +1,4 @@
-# PDF K-Level Counter
+# OMR PDF K-Level Counter
 
 A simple tool that counts **K1–K6 answers** in `.pdf` OMR sheets.
 
