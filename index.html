@@ -3,39 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <title>OMR PDF K-Level Counter</title>
-  <!-- PDF.js for PDF parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #e6f4ff; }
-    h1 { text-align: center; color: #003366; }
+    /* 🔥 Futuristic Animated Background */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(270deg, #0f172a, #0d3b66, #001f3f);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      min-height: 100vh;
+      padding: 40px;
+      color: #fff;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      text-align: center;
+      color: #00eaff;
+      text-shadow: 0 0 10px #00eaff;
+      animation: fadeIn 1.2s ease forwards;
+    }
+
     .college-header {
       display: flex; align-items: center; justify-content: center;
-      background: #b3daff; padding: 15px; border-radius: 10px; margin-bottom: 20px;
+      background: rgba(0, 170, 255, 0.15);
+      padding: 15px; border-radius: 12px;
+      margin: 20px auto;
+      width: 700px;
+      box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
+      animation: slideDown 1s ease forwards;
     }
-    .college-header img { height: 80px; margin-right: 20px; border-radius: 8px; }
-    .college-header h2 { margin: 0; color: #003366; }
+    .college-header img {
+      height: 80px; margin-right: 20px; border-radius: 8px;
+      animation: pulse 2s infinite alternate;
+    }
+    .college-header h2 { margin: 0; color: #00eaff; }
+
+    /* Upload Box */
     .upload-box {
       text-align: center; margin: 20px auto; padding: 30px;
-      border: 2px dashed #3399ff; border-radius: 10px; background: #cce6ff; width: 460px;
+      border: 2px dashed #00eaff;
+      border-radius: 10px;
+      background: rgba(0, 230, 255, 0.08);
+      width: 460px;
+      box-shadow: 0 0 20px rgba(0, 238, 255, 0.3);
+      animation: fadeIn 1.5s ease forwards;
     }
-    input[type="file"] { margin-top: 10px; }
-    #status { text-align: center; margin: 20px; font-weight: bold; color: #003366; }
-    #student-info {
-      background: #ffffff; padding: 15px; margin: 20px auto; width: 600px;
-      border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,.1); font-size: 16px;
+    .upload-box:hover {
+      background: rgba(0, 238, 255, 0.15);
+      transform: scale(1.02);
+      transition: 0.3s ease;
     }
-    #results {
-      background: #ffffff; padding: 20px; margin: 20px auto; width: 600px;
-      border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,.1);
+
+    #status {
+      text-align: center; margin: 20px;
+      font-weight: bold; color: #00eaff;
     }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #99ccff; padding: 8px; text-align: center; }
-    th { background: #b3daff; }
+
+    /* Info + Results */
+    #student-info, #results {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      margin: 20px auto;
+      width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
+      animation: fadeUp 0.8s ease forwards;
+    }
+
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 10px;
+      color: #fff;
+    }
+    th, td { border: 1px solid rgba(0, 238, 255, 0.3); padding: 8px; text-align: center; }
+    th { background: rgba(0, 238, 255, 0.2); }
     td { font-weight: bold; }
+
     ul { list-style-type: none; padding: 0; }
     ul li { margin: 5px 0; }
-    .answered { color: green; font-weight: bold; }
-    .unanswered { color: red; font-weight: bold; }
+
+    .answered { color: #00ff9d; font-weight: bold; }
+    .unanswered { color: #ff4b4b; font-weight: bold; }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      from { filter: drop-shadow(0 0 5px #00eaff); }
+      to { filter: drop-shadow(0 0 15px #00eaff); }
+    }
   </style>
 </head>
 <body>
@@ -121,18 +193,15 @@
         text += pageText + "\n";
       }
 
-      // Normalize spacing and ensure newlines for questions
       text = text.replace(/\s+Q\.No\./gi, "\nQ.No.");
       text = text.replace(/(\d+)\s+\(/g, "\n$1 (");
       return text;
     }
 
     function extractStudentInfo(text) {
-      // Normalize text first
-      text = text.replace(/\s+/g, " "); // Collapse multiple spaces
-      text = text.replace(/([A-Z])\s+([a-z]+)/g, "$1$2"); // Fix broken words like "A nalytics"
+      text = text.replace(/\s+/g, " ");
+      text = text.replace(/([A-Z])\s+([a-z]+)/g, "$1$2");
 
-      // Add line breaks for clean extraction
       text = text.replace(/Student\s*Name\s*:/i, "\nStudent Name: ");
       text = text.replace(/Register\s*No\s*:/i, "\nRegister No: ");
       text = text.replace(/Department\s*:/i, "\nDepartment: ");
