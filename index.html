@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OMR PDF K-Level Counter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
-    /* 🎥 Fullscreen Video Background */
+    /* ===== Fullscreen Video Background ===== */
     body, html {
       margin: 0;
       padding: 0;
@@ -14,9 +13,9 @@
       font-family: Arial, sans-serif;
       color: white;
       overflow-x: hidden;
+      background: #000;
     }
 
-    /* Video background container */
     .video-bg {
       position: fixed;
       top: 0;
@@ -35,26 +34,25 @@
       min-height: 100%;
       transform: translate(-50%, -50%);
       object-fit: cover;
-      filter: brightness(0.85) blur(1px); /* brighter & less blur */
+      filter: brightness(0.25) blur(2px);
     }
 
-    /* Dark overlay for contrast */
     .overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.3); /* lighter overlay for visibility */
+      background: rgba(0, 0, 0, 0.7);
       z-index: -1;
     }
 
-    /* Main content styling */
+    /* ===== Main Content ===== */
     body {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px;
+      padding: 20px;
       position: relative;
       z-index: 1;
     }
@@ -62,52 +60,83 @@
     h1 {
       color: #00eaff;
       text-shadow: 0 0 15px #00eaff;
+      text-align: center;
+      margin-bottom: 20px;
     }
 
+    /* ===== College Header ===== */
     .college-header {
       display: flex;
       align-items: center;
       justify-content: center;
       background: rgba(0, 170, 255, 0.15);
-      padding: 15px;
+      padding: 15px 20px;
       border-radius: 12px;
-      margin: 20px auto;
-      width: 700px;
+      margin-bottom: 30px;
+      max-width: 95%;
       box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
+      flex-wrap: wrap;
     }
 
     .college-header img {
       height: 80px;
       margin-right: 20px;
       border-radius: 8px;
+      flex-shrink: 0;
     }
 
+    .college-header h2 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin: 0;
+    }
+
+    /* ===== Upload Box ===== */
     .upload-box {
       text-align: center;
-      margin: 20px auto;
+      margin-bottom: 30px;
       padding: 30px;
       border: 2px dashed #00eaff;
-      border-radius: 10px;
+      border-radius: 12px;
       background: rgba(0, 230, 255, 0.08);
-      width: 460px;
+      width: 90%;
+      max-width: 500px;
       backdrop-filter: blur(6px);
       box-shadow: 0 0 20px rgba(0, 238, 255, 0.3);
+      transition: 0.3s;
     }
 
+    .upload-box:hover {
+      border-color: #00ff9d;
+      box-shadow: 0 0 30px rgba(0, 255, 157, 0.5);
+    }
+
+    input[type="file"] {
+      margin-top: 15px;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ===== Status & Results ===== */
     #status, #student-info, #results {
       background: rgba(255, 255, 255, 0.08);
       padding: 20px;
-      margin: 20px auto;
-      width: 600px;
-      border-radius: 10px;
+      margin-bottom: 20px;
+      width: 95%;
+      max-width: 800px;
+      border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
       backdrop-filter: blur(6px);
+      overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
+      font-size: 0.95rem;
     }
 
     th, td {
@@ -120,21 +149,33 @@
       background: rgba(0, 238, 255, 0.2);
     }
 
+    tr:nth-child(even) {
+      background: rgba(0, 238, 255, 0.05);
+    }
+
     .answered { color: #00ff9d; font-weight: bold; }
     .unanswered { color: #ff4b4b; font-weight: bold; }
 
-    /* Responsive for mobile */
-    @media (max-width: 768px) {
-      .college-header, .upload-box, #status, #student-info, #results {
-        width: 90%;
-        padding: 15px;
+    /* ===== Question-wise list scrollable ===== */
+    #results ul {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-left: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .college-header {
+        flex-direction: column;
+      }
+      .college-header img {
+        margin-bottom: 10px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- 🎥 Background Video -->
+  <!-- Video Background -->
   <div class="video-bg">
     <video autoplay muted loop playsinline>
       <source src="Animation video.mp4" type="video/mp4">
@@ -146,18 +187,18 @@
   <!-- College Header -->
   <div class="college-header">
     <img src="college_token.avif" alt="College Logo">
-    <div>
-      <h2>Government Arts College, Nandanam, Chennai-35</h2>
-    </div>
+    <h2>Government Arts College, Nandanam, Chennai-35</h2>
   </div>
 
   <h1>OMR PDF K-Level Counter</h1>
 
+  <!-- File Upload -->
   <div class="upload-box">
     <p>Select a <b>.pdf</b> file to process:</p>
     <input type="file" id="fileInput" accept=".pdf">
   </div>
 
+  <!-- Status / Info / Results -->
   <div id="status"></div>
   <div id="student-info"></div>
   <div id="results"></div>
@@ -187,8 +228,7 @@
         studentHtml += "</table>";
         setStudentInfo(studentHtml);
 
-        let html = "<h3>K-Level Counts</h3>";
-        html += "<table><tr><th>K-Level</th><th>Count</th></tr>";
+        let html = "<h3>K-Level Counts</h3><table><tr><th>K-Level</th><th>Count</th></tr>";
         for (const k of ["K1","K2","K3","K4","K5","K6"]) {
           html += `<tr><td>${k}</td><td>${counts[k]}</td></tr>`;
         }
@@ -231,13 +271,6 @@
 
     function extractStudentInfo(text) {
       text = text.replace(/\s+/g, " ");
-      text = text.replace(/([A-Z])\s+([a-z]+)/g, "$1$2");
-
-      text = text.replace(/Student\s*Name\s*:/i, "\nStudent Name: ");
-      text = text.replace(/Register\s*No\s*:/i, "\nRegister No: ");
-      text = text.replace(/Department\s*:/i, "\nDepartment: ");
-      text = text.replace(/Subject\s*Name\s*:/i, "\nSubject Name: ");
-      text = text.replace(/Subject\s*Code\s*:/i, "\nSubject Code: ");
 
       const nameMatch = text.match(/Student\s*Name[:.\- ]+([A-Za-z .]+)/i);
       const regMatch = text.match(/Register\s*No[:.\- ]+([A-Za-z0-9]+)/i);
@@ -275,5 +308,6 @@
       return { counts, total, unanswered, details };
     }
   </script>
+
 </body>
 </html>
