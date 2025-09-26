@@ -5,51 +5,64 @@
   <title>OMR PDF K-Level Counter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
-    /* 🔥 Futuristic Background with Animation */
-    body {
-      font-family: Arial, sans-serif;
+    /* 🎥 Fullscreen Video Background */
+    body, html {
       margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at bottom, #050a1a, #000000 90%);
-      color: #fff;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
       overflow-x: hidden;
+    }
+
+    /* Video background container */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -2;
+    }
+
+    .video-bg video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      filter: brightness(0.4) blur(2px); /* Darken & blur for text readability */
+    }
+
+    /* Dark overlay for contrast */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: -1;
+    }
+
+    /* Main content styling */
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 40px;
       position: relative;
+      z-index: 1;
     }
 
-    /* 🌌 Fullscreen Tower Background */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      background: url("Digital Data Sphere.jpg") no-repeat center center;
-      background-size: contain;
-      opacity: 0.15;
-      z-index: -1;
-      animation: floatTower 8s ease-in-out infinite alternate;
-      filter: drop-shadow(0 0 20px rgba(0, 200, 255, 0.8));
-    }
-
-    @keyframes floatTower {
-      0% { transform: translate(-50%, -52%) scale(1); }
-      100% { transform: translate(-50%, -48%) scale(1.02); }
-    }
-
-    /* Title */
     h1 {
-      text-align: center;
       color: #00eaff;
-      text-shadow: 0 0 10px #00eaff;
-      animation: fadeIn 1.2s ease forwards;
+      text-shadow: 0 0 15px #00eaff;
     }
 
-    /* College Header */
     .college-header {
       display: flex;
       align-items: center;
@@ -60,17 +73,14 @@
       margin: 20px auto;
       width: 700px;
       box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
-      animation: slideDown 1s ease forwards;
     }
+
     .college-header img {
       height: 80px;
       margin-right: 20px;
       border-radius: 8px;
-      animation: pulse 2s infinite alternate;
     }
-    .college-header h2 { margin: 0; color: #00eaff; }
 
-    /* Upload Box */
     .upload-box {
       text-align: center;
       margin: 20px auto;
@@ -79,31 +89,17 @@
       border-radius: 10px;
       background: rgba(0, 230, 255, 0.08);
       width: 460px;
-      box-shadow: 0 0 20px rgba(0, 238, 255, 0.3);
-      animation: fadeIn 1.5s ease forwards;
       backdrop-filter: blur(6px);
-    }
-    .upload-box:hover {
-      background: rgba(0, 238, 255, 0.15);
-      transform: scale(1.02);
-      transition: 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 238, 255, 0.3);
     }
 
-    /* Results & Student Info */
-    #status {
-      text-align: center;
-      margin: 20px;
-      font-weight: bold;
-      color: #00eaff;
-    }
-    #student-info, #results {
+    #status, #student-info, #results {
       background: rgba(255, 255, 255, 0.08);
       padding: 20px;
       margin: 20px auto;
       width: 600px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
-      animation: fadeUp 0.8s ease forwards;
       backdrop-filter: blur(6px);
     }
 
@@ -111,45 +107,32 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      color: #fff;
     }
+
     th, td {
       border: 1px solid rgba(0, 238, 255, 0.3);
       padding: 8px;
       text-align: center;
     }
+
     th {
       background: rgba(0, 238, 255, 0.2);
     }
-    td {
-      font-weight: bold;
-    }
 
-    ul { list-style-type: none; padding: 0; }
-    ul li { margin: 5px 0; }
     .answered { color: #00ff9d; font-weight: bold; }
     .unanswered { color: #ff4b4b; font-weight: bold; }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse {
-      from { filter: drop-shadow(0 0 5px #00eaff); }
-      to { filter: drop-shadow(0 0 15px #00eaff); }
-    }
   </style>
 </head>
 <body>
+
+  <!-- 🎥 Background Video -->
+  <div class="video-bg">
+    <video autoplay muted loop playsinline>
+      <source src="Animation video.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div class="overlay"></div>
 
   <div class="college-header">
     <img src="college_token.avif" alt="College Logo">
@@ -224,7 +207,6 @@
     async function extractTextFromPDF(file) {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
       let text = "";
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
@@ -232,7 +214,6 @@
         const pageText = content.items.map(item => item.str).join(" ");
         text += pageText + "\n";
       }
-
       text = text.replace(/\s+Q\.No\./gi, "\nQ.No.");
       text = text.replace(/(\d+)\s+\(/g, "\n$1 (");
       return text;
