@@ -2,28 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OMR PDF K-Level Counter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
-    /* Fullscreen video background */
+    /* 🎥 Fullscreen Video Background */
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
       color: white;
-      overflow: hidden; /* remove scrollbars */
+      overflow-x: hidden;
     }
 
+    /* Video background container */
     .video-bg {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: -2;
       overflow: hidden;
+      z-index: -2;
     }
 
     .video-bg video {
@@ -34,9 +34,10 @@
       min-height: 100%;
       transform: translate(-50%, -50%);
       object-fit: cover;
-      filter: brightness(0.4) blur(2px);
+      filter: brightness(0.4) blur(2px); /* Darken & blur for text readability */
     }
 
+    /* Dark overlay for contrast */
     .overlay {
       position: fixed;
       top: 0;
@@ -47,6 +48,7 @@
       z-index: -1;
     }
 
+    /* Main content styling */
     body {
       display: flex;
       flex-direction: column;
@@ -99,8 +101,6 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
       backdrop-filter: blur(6px);
-      overflow: auto;
-      max-height: 60vh;
     }
 
     table {
@@ -121,21 +121,14 @@
 
     .answered { color: #00ff9d; font-weight: bold; }
     .unanswered { color: #ff4b4b; font-weight: bold; }
-
-    @media (max-width: 768px) {
-      .college-header, .upload-box, #status, #student-info, #results {
-        width: 90%;
-        padding: 15px;
-      }
-    }
   </style>
 </head>
 <body>
 
-  <!-- Video Background -->
+  <!-- 🎥 Background Video -->
   <div class="video-bg">
     <video autoplay muted loop playsinline>
-      <source src="https://www.w3schools.com/howto/rain.mp4" type="video/mp4">
+      <source src="your-video.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
   </div>
@@ -229,6 +222,7 @@
     function extractStudentInfo(text) {
       text = text.replace(/\s+/g, " ");
       text = text.replace(/([A-Z])\s+([a-z]+)/g, "$1$2");
+
       text = text.replace(/Student\s*Name\s*:/i, "\nStudent Name: ");
       text = text.replace(/Register\s*No\s*:/i, "\nRegister No: ");
       text = text.replace(/Department\s*:/i, "\nDepartment: ");
@@ -271,6 +265,5 @@
       return { counts, total, unanswered, details };
     }
   </script>
-
 </body>
 </html>
