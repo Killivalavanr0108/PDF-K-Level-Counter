@@ -5,7 +5,7 @@
   <title>OMR PDF K-Level Counter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
- /* Fullscreen video background */
+    /* 🎥 Fullscreen Video Background */
     body, html {
       margin: 0;
       padding: 0;
@@ -33,7 +33,7 @@
       min-height: 100%;
       transform: translate(-50%, -50%);
       object-fit: cover;
-      filter: brightness(0.85) blur(1px); /* brighter & less blur */
+      filter: brightness(0.85) blur(1px);
     }
 
     .overlay {
@@ -42,11 +42,11 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.3); /* lighter overlay for text readability */
+      background: rgba(0, 0, 0, 0.3);
       z-index: -1;
     }
 
-    /* Main content */
+    /* Main content layout */
     body {
       display: flex;
       flex-direction: column;
@@ -120,7 +120,6 @@
     .answered { color: #00ff9d; font-weight: bold; }
     .unanswered { color: #ff4b4b; font-weight: bold; }
 
-    /* Responsive for mobile */
     @media (max-width: 768px) {
       .college-header, .upload-box, #status, #student-info, #results {
         width: 90%;
@@ -174,6 +173,7 @@
         const { department, subjectCode, regNo, studentName, subjectName } = extractStudentInfo(extractedText);
         const { counts, total, unanswered, details } = countKLevels(extractedText);
 
+        // Student info
         let studentHtml = "<h3>Student Information</h3><table>";
         studentHtml += `<tr><td><b>Student Name</b></td><td>${studentName || "Not Found"}</td></tr>`;
         studentHtml += `<tr><td><b>Register No</b></td><td>${regNo || "Not Found"}</td></tr>`;
@@ -183,6 +183,7 @@
         studentHtml += "</table>";
         setStudentInfo(studentHtml);
 
+        // K-Level counts
         let html = "<h3>K-Level Counts</h3>";
         html += "<table><tr><th>K-Level</th><th>Count</th></tr>";
         for (const k of ["K1","K2","K3","K4","K5","K6"]) {
@@ -193,10 +194,15 @@
         html += `<tr><td><b>Total Questions</b></td><td><b>${details.length}</b></td></tr>`;
         html += "</table>";
 
+        // Question-wise answers
         html += "<h3>Question-wise Answers</h3><ul>";
-        details.forEach((d, idx) => {
-          html += `<li>Q${idx+1}: ${d.pickedK ? `<span class="answered">${d.pickedK}</span>` : `<span class="unanswered">Unanswered ❌</span>`}</li>`;
-        });
+        if (details.length === 0) {
+          html += `<li><span class="unanswered">No questions detected — check PDF format.</span></li>`;
+        } else {
+          details.forEach((d, idx) => {
+            html += `<li>Q${idx+1}: ${d.pickedK ? `<span class="answered">${d.pickedK}</span>` : `<span class="unanswered">Unanswered ❌</span>`}</li>`;
+          });
+        }
         html += "</ul>";
 
         setResults(html);
@@ -252,17 +258,17 @@
 
     function countKLevels(rawText) {
       const counts = { K1:0, K2:0, K3:0, K4:0, K5:0, K6:0 };
-      const qRegex = /^(\d+)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)\s+\((.*?)\)/gm;
+
+      // ✅ Flexible regex that tolerates spaces
+      const qRegex = /(\d+)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)/g;
       const details = [];
 
       let match;
       while ((match = qRegex.exec(rawText)) !== null) {
         const qNo = match[1];
-        const choices = match.slice(2, 8);
+        const choices = match.slice(2, 8).map(c => c.trim());
         const pickedIndex = choices.findIndex(c => c.includes("●"));
-        if (pickedIndex >= 0) {
-          counts[`K${pickedIndex+1}`]++;
-        }
+        if (pickedIndex >= 0) counts[`K${pickedIndex+1}`]++;
         details.push({ q: qNo, pickedK: pickedIndex >= 0 ? `K${pickedIndex+1}` : null });
       }
 
