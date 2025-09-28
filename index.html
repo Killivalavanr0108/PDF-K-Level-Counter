@@ -5,7 +5,7 @@
   <title>OMR PDF K-Level Counter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
- /* Fullscreen video background */
+    /* 🎥 Fullscreen Video Background */
     body, html {
       margin: 0;
       padding: 0;
@@ -15,6 +15,7 @@
       overflow-x: hidden;
     }
 
+    /* Video background container */
     .video-bg {
       position: fixed;
       top: 0;
@@ -33,20 +34,21 @@
       min-height: 100%;
       transform: translate(-50%, -50%);
       object-fit: cover;
-      filter: brightness(0.85) blur(1px); /* brighter & less blur */
+      filter: brightness(0.4) blur(2px); /* Darken & blur for text readability */
     }
 
+    /* Dark overlay for contrast */
     .overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.3); /* lighter overlay for text readability */
+      background: rgba(0, 0, 0, 0.6);
       z-index: -1;
     }
 
-    /* Main content */
+    /* Main content styling */
     body {
       display: flex;
       flex-direction: column;
@@ -119,14 +121,6 @@
 
     .answered { color: #00ff9d; font-weight: bold; }
     .unanswered { color: #ff4b4b; font-weight: bold; }
-
-    /* Responsive for mobile */
-    @media (max-width: 768px) {
-      .college-header, .upload-box, #status, #student-info, #results {
-        width: 90%;
-        padding: 15px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -185,7 +179,7 @@
 
         let html = "<h3>K-Level Counts</h3>";
         html += "<table><tr><th>K-Level</th><th>Count</th></tr>";
-        for (const k of ["K4","K5"]) {  // ✅ Show only K4 & K5
+        for (const k of ["K1","K2","K3","K4","K5","K6"]) {
           html += `<tr><td>${k}</td><td>${counts[k]}</td></tr>`;
         }
         html += `<tr><td><b>Total Answered</b></td><td><b>${total}</b></td></tr>`;
