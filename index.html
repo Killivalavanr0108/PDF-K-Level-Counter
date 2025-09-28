@@ -11,271 +11,159 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      color: white;
-      overflow-x: hidden;
-    }
-
-    .video-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      z-index: -2;
-    }
-
-    .video-bg video {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      min-width: 100%;
-      min-height: 100%;
-      transform: translate(-50%, -50%);
-      object-fit: cover;
-      filter: brightness(0.85) blur(1px);
-    }
-
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      z-index: -1;
-    }
-
-    /* Main content layout */
-    body {
+      background: #000;
+      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px;
-      position: relative;
-      z-index: 1;
     }
-
-    h1 {
-      color: #00eaff;
-      text-shadow: 0 0 15px #00eaff;
+    video.bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      opacity: 0.4;
     }
-
-    .college-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 170, 255, 0.15);
-      padding: 15px;
-      border-radius: 12px;
-      margin: 20px auto;
-      width: 700px;
-      box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
+    .container {
+      background: rgba(0,0,0,0.65);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
     }
-
-    .college-header img {
-      height: 80px;
-      margin-right: 20px;
-      border-radius: 8px;
-    }
-
+    h1 { text-align: center; }
     .upload-box {
       text-align: center;
-      margin: 20px auto;
-      padding: 30px;
-      border: 2px dashed #00eaff;
-      border-radius: 10px;
-      background: rgba(0, 230, 255, 0.08);
-      width: 460px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 0 20px rgba(0, 238, 255, 0.3);
+      margin: 15px 0;
     }
-
-    #status, #student-info, #results {
-      background: rgba(255, 255, 255, 0.08);
-      padding: 20px;
-      margin: 20px auto;
-      width: 600px;
+    input[type=file] {
+      background: #222;
+      padding: 10px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
-      backdrop-filter: blur(6px);
+      border: 1px solid #555;
+      color: #fff;
     }
-
     table {
-      width: 100%;
       border-collapse: collapse;
+      width: 100%;
       margin-top: 10px;
     }
-
     th, td {
-      border: 1px solid rgba(0, 238, 255, 0.3);
-      padding: 8px;
+      border: 1px solid #666;
+      padding: 6px;
       text-align: center;
     }
-
-    th {
-      background: rgba(0, 238, 255, 0.2);
-    }
-
-    .answered { color: #00ff9d; font-weight: bold; }
-    .unanswered { color: #ff4b4b; font-weight: bold; }
-
-    @media (max-width: 768px) {
-      .college-header, .upload-box, #status, #student-info, #results {
-        width: 90%;
-        padding: 15px;
-      }
+    .answered { color: #0f0; font-weight: bold; }
+    .unanswered { color: #f33; font-weight: bold; }
+    pre.debug {
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      overflow-x: auto;
+      max-height: 200px;
+      font-size: 0.8em;
     }
   </style>
 </head>
 <body>
 
-  <!-- 🎥 Background Video -->
-  <div class="video-bg">
-    <video autoplay muted loop playsinline>
-      <source src="Animation video.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </div>
-  <div class="overlay"></div>
+<video autoplay muted loop class="bg">
+  <source src="Animation video.mp4" type="video/mp4">
+</video>
 
-  <div class="college-header">
-    <img src="college_token.avif" alt="College Logo">
-    <div>
-      <h2>Government Arts College, Nandanam, Chennai-35</h2>
-    </div>
-  </div>
-
+<div class="container">
   <h1>OMR PDF K-Level Counter</h1>
-
   <div class="upload-box">
-    <p>Select a <b>.pdf</b> file to process:</p>
-    <input type="file" id="fileInput" accept=".pdf">
+    <input type="file" id="pdfFile" accept="application/pdf" />
   </div>
-
-  <div id="status"></div>
+  <div id="status">Upload a PDF to see results</div>
   <div id="student-info"></div>
-  <div id="results"></div>
+  <div id="klevel-counts"></div>
+  <div id="question-breakdown"></div>
+  <pre id="debug-text" class="debug" style="display:none"></pre>
+</div>
 
-  <script>
-    document.getElementById("fileInput").addEventListener("change", handleFile);
+<script>
+  document.getElementById("pdfFile").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById("status").textContent = "⏳ Processing file...";
 
-    async function handleFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    try {
+      const text = await extractTextFromPDF(file);
+      document.getElementById("debug-text").style.display = "block";
+      document.getElementById("debug-text").textContent = text; // DEBUG fallback
 
-      setStatus("⏳ Processing file...");
-      setResults("");
-      setStudentInfo("");
+      processText(text);
+    } catch (err) {
+      document.getElementById("status").textContent = "❌ Error reading PDF: " + err;
+    }
+  });
 
-      try {
-        const extractedText = await extractTextFromPDF(file);
-        const { department, subjectCode, regNo, studentName, subjectName } = extractStudentInfo(extractedText);
-        const { counts, total, unanswered, details } = countKLevels(extractedText);
+  async function extractTextFromPDF(file) {
+    const pdfData = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+    let extracted = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      extracted += content.items.map(it => it.str).join(" ") + "\n";
+    }
+    return extracted;
+  }
 
-        // Student info
-        let studentHtml = "<h3>Student Information</h3><table>";
-        studentHtml += `<tr><td><b>Student Name</b></td><td>${studentName || "Not Found"}</td></tr>`;
-        studentHtml += `<tr><td><b>Register No</b></td><td>${regNo || "Not Found"}</td></tr>`;
-        studentHtml += `<tr><td><b>Department</b></td><td>${department || "Not Found"}</td></tr>`;
-        studentHtml += `<tr><td><b>Subject Name</b></td><td>${subjectName || "Not Found"}</td></tr>`;
-        studentHtml += `<tr><td><b>Subject Code</b></td><td>${subjectCode || "Not Found"}</td></tr>`;
-        studentHtml += "</table>";
-        setStudentInfo(studentHtml);
+  function processText(raw) {
+    // Show student info (sample fallback if not found)
+    const studentInfoDiv = document.getElementById("student-info");
+    studentInfoDiv.innerHTML = `
+      <table>
+        <tr><th>Student Name</th><td>${findField(raw, /Student Name[:\s]+([A-Za-z\s]+)/, "Unknown")}</td></tr>
+        <tr><th>Register No</th><td>${findField(raw, /Register\s*No[:\s]+(\w+)/, "Unknown")}</td></tr>
+        <tr><th>Department</th><td>${findField(raw, /Department[:\s]+([A-Za-z0-9\-\.\s]+)/, "Unknown")}</td></tr>
+        <tr><th>Subject Name</th><td>${findField(raw, /Subject Name[:\s]+([A-Za-z\s]+)/, "Unknown")}</td></tr>
+        <tr><th>Subject Code</th><td>${findField(raw, /Subject Code[:\s]+(\w+)/, "Unknown")}</td></tr>
+      </table>`;
 
-        // K-Level counts
-        let html = "<h3>K-Level Counts</h3>";
-        html += "<table><tr><th>K-Level</th><th>Count</th></tr>";
-        for (const k of ["K1","K2","K3","K4","K5","K6"]) {
-          html += `<tr><td>${k}</td><td>${counts[k]}</td></tr>`;
-        }
-        html += `<tr><td><b>Total Answered</b></td><td><b>${total}</b></td></tr>`;
-        html += `<tr><td><b>Total Unanswered</b></td><td><b>${unanswered}</b></td></tr>`;
-        html += `<tr><td><b>Total Questions</b></td><td><b>${details.length}</b></td></tr>`;
-        html += "</table>";
-
-        // Question-wise answers
-        html += "<h3>Question-wise Answers</h3><ul>";
-        if (details.length === 0) {
-          html += `<li><span class="unanswered">No questions detected — check PDF format.</span></li>`;
-        } else {
-          details.forEach((d, idx) => {
-            html += `<li>Q${idx+1}: ${d.pickedK ? `<span class="answered">${d.pickedK}</span>` : `<span class="unanswered">Unanswered ❌</span>`}</li>`;
-          });
-        }
-        html += "</ul>";
-
-        setResults(html);
-        setStatus("✅ Done");
-      } catch (err) {
-        setStatus("❌ Error: " + err.message);
+    // Match questions with (●)
+    const qRegex = /(\d+)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)/g;
+    const details = [];
+    let match;
+    let counts = {K1:0,K2:0,K3:0,K4:0,K5:0,K6:0};
+    while ((match = qRegex.exec(raw)) !== null) {
+      const qNo = match[1];
+      const answers = match.slice(2);
+      let chosenIndex = answers.findIndex(a => a.includes("●"));
+      if (chosenIndex >= 0) {
+        counts["K"+(chosenIndex+1)]++;
+        details.push(`<div class="answered">Q${qNo}: ✅ K${chosenIndex+1}</div>`);
+      } else {
+        details.push(`<div class="unanswered">Q${qNo}: ❌ Unanswered</div>`);
       }
     }
 
-    function setStatus(msg) { document.getElementById("status").innerText = msg; }
-    function setResults(html) { document.getElementById("results").innerHTML = html; }
-    function setStudentInfo(html) { document.getElementById("student-info").innerHTML = html; }
+    // Always show results, even if zero matches
+    document.getElementById("klevel-counts").innerHTML = `
+      <h3>K-Level Counts</h3>
+      <table>
+        ${Object.keys(counts).map(k=>`<tr><th>${k}</th><td>${counts[k]}</td></tr>`).join("")}
+        <tr><th>Total Answered</th><td>${Object.values(counts).reduce((a,b)=>a+b,0)}</td></tr>
+      </table>`;
 
-    async function extractTextFromPDF(file) {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let text = "";
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const content = await page.getTextContent();
-        const pageText = content.items.map(item => item.str).join(" ");
-        text += pageText + "\n";
-      }
-      text = text.replace(/\s+Q\.No\./gi, "\nQ.No.");
-      text = text.replace(/(\d+)\s+\(/g, "\n$1 (");
-      return text;
-    }
+    document.getElementById("question-breakdown").innerHTML = `
+      <h3>Question-wise Breakdown</h3>
+      ${details.length>0 ? details.join("") : "<div class='unanswered'>No questions detected</div>"}
+    `;
 
-    function extractStudentInfo(text) {
-      text = text.replace(/\s+/g, " ");
-      text = text.replace(/([A-Z])\s+([a-z]+)/g, "$1$2");
+    document.getElementById("status").textContent = "✅ Done";
+  }
 
-      text = text.replace(/Student\s*Name\s*:/i, "\nStudent Name: ");
-      text = text.replace(/Register\s*No\s*:/i, "\nRegister No: ");
-      text = text.replace(/Department\s*:/i, "\nDepartment: ");
-      text = text.replace(/Subject\s*Name\s*:/i, "\nSubject Name: ");
-      text = text.replace(/Subject\s*Code\s*:/i, "\nSubject Code: ");
+  function findField(text, regex, fallback) {
+    const m = regex.exec(text);
+    return m ? m[1].trim() : fallback;
+  }
+</script>
 
-      const nameMatch = text.match(/Student\s*Name[:.\- ]+([A-Za-z .]+)/i);
-      const regMatch = text.match(/Register\s*No[:.\- ]+([A-Za-z0-9]+)/i);
-      const deptMatch = text.match(/Department[:.\- ]+([A-Za-z0-9.\- ]+)/i);
-      const subjNameMatch = text.match(/Subject\s*Name[:.\- ]+([A-Za-z0-9 .]+)/i);
-      const subjCodeMatch = text.match(/Subject\s*Code[:.\- ]+([A-Za-z0-9]+)/i);
-
-      return {
-        studentName: nameMatch ? nameMatch[1].trim() : null,
-        regNo: regMatch ? regMatch[1].trim() : null,
-        department: deptMatch ? deptMatch[1].replace(/\s+/g, " ").trim() : null,
-        subjectName: subjNameMatch ? subjNameMatch[1].trim() : null,
-        subjectCode: subjCodeMatch ? subjCodeMatch[1].trim() : null
-      };
-    }
-
-    function countKLevels(rawText) {
-      const counts = { K1:0, K2:0, K3:0, K4:0, K5:0, K6:0 };
-
-      // ✅ Flexible regex that tolerates spaces
-      const qRegex = /(\d+)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)\s*\((.*?)\)/g;
-      const details = [];
-
-      let match;
-      while ((match = qRegex.exec(rawText)) !== null) {
-        const qNo = match[1];
-        const choices = match.slice(2, 8).map(c => c.trim());
-        const pickedIndex = choices.findIndex(c => c.includes("●"));
-        if (pickedIndex >= 0) counts[`K${pickedIndex+1}`]++;
-        details.push({ q: qNo, pickedK: pickedIndex >= 0 ? `K${pickedIndex+1}` : null });
-      }
-
-      const total = Object.values(counts).reduce((a,b)=>a+b,0);
-      const unanswered = details.filter(d => !d.pickedK).length;
-      return { counts, total, unanswered, details };
-    }
-  </script>
 </body>
 </html>
